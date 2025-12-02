@@ -11,19 +11,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebClientConfig {
 
     @Bean
-    public WebClient webClient() {
+    public WebClient webClient(FacebookOAuthConfig fbConfig) {
 
         return WebClient.builder()
-                .baseUrl("https://graph.facebook.com/")
+                .baseUrl("https://graph.facebook.com/" + fbConfig.getApiVersion())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-
-                // allow large webhook payloads
                 .exchangeStrategies(
                         ExchangeStrategies.builder()
-                                .codecs(config -> config
-                                        .defaultCodecs()
-                                        .maxInMemorySize(5 * 1024 * 1024)
-                                ).build()
+                                .codecs(config -> config.defaultCodecs().maxInMemorySize(5 * 1024 * 1024))
+                                .build()
                 )
                 .build();
     }

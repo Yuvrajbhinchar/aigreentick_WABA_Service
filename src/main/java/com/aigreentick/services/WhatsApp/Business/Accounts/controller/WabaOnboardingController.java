@@ -17,30 +17,27 @@ public class WabaOnboardingController {
     private final FacebookOAuthService oAuthService;
     private final WabaOnboardingService onboardingService;
 
-    // 1️⃣ Generate Facebook OAuth URL
     @GetMapping("/login-url")
-    public ApiResponse getLoginUrl() {
+    public ApiResponse loginUrl() {
 
         String url = "https://www.facebook.com/" + fbConfig.getApiVersion()
                 + "/dialog/oauth?client_id=" + fbConfig.getAppId()
                 + "&redirect_uri=" + fbConfig.getRedirectUrl()
-                + "&scope=business_management,"
-                + "whatsapp_business_management,"
-                + "whatsapp_business_messaging,"
-                + "pages_show_list";
+                + "&scope=business_management,whatsapp_business_management,whatsapp_business_messaging";
 
         return ApiResponse.ok(url);
     }
 
-    // 2️⃣ Meta callback with ?code=
+
     @GetMapping("/callback")
-    public Mono<ApiResponse> callback(@RequestParam String code,
-                                      @RequestParam Long organizationId,
-                                      @RequestParam Long userId) {
+    public Mono<ApiResponse> callback(
+            @RequestParam String code,
+            @RequestParam Long organizationId,
+            @RequestParam Long userId) {
 
         return oAuthService.exchangeCodeForToken(code)
-                .flatMap(tokenJson -> {
-                    String token = oAuthService.extractAccessToken(tokenJson);
+                .flatMap(json -> {
+                    String token = oAuthService.extractAccessToken(json);
                     return onboardingService.completeOnboarding(token, organizationId, userId);
                 })
                 .map(ApiResponse::ok)
